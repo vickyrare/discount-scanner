@@ -1,0 +1,27 @@
+# Copyright 2014 The Flutter Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Uncomment this line to define a global platform for your project
+platform :ios, '12.0'
+
+# CocoaPods's specs repository is huge and remote, so we only use it when needed.
+# If you have a local mirror of the repository, set up your Podfile like this:
+#
+# source 'https://github.com/CocoaPods/Specs.git'
+#
+# Otherwise, don't uncomment the source line and CocoaPods will fallback to the CDN.
+# source 'https://cdn.cocoapods.org/'
+
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+  end
+end
