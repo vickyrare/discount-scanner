@@ -1,3 +1,4 @@
+import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/scanner_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -52,6 +53,16 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 textStyle: const TextStyle(fontSize: 16),
               ),
+            ),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ManualPriceEntryScreen()),
+                );
+              },
+              child: const Text('Or enter price manually'),
             ),
           ],
         ),

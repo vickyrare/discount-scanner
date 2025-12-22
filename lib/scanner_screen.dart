@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:discount_scanner/manual_discount_screen.dart';
+import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/result_screen.dart';
 import 'package:discount_scanner/utils/text_parser.dart';
 import 'package:flutter/foundation.dart';
@@ -24,6 +24,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
   bool _isBusy = false;
   bool _isNavigating = false;
   String _recognizedText = '';
+  Timer? _navigationTimer;
+  double? _detectedPrice;
 
   @override
   void initState() {
@@ -36,7 +38,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     if (_cameras != null && _cameras!.isNotEmpty) {
       _controller = CameraController(
         _cameras![0],
-        ResolutionPreset.high,
+        ResolutionPreset.max,
         enableAudio: false,
         imageFormatGroup: Platform.isAndroid
             ? ImageFormatGroup.nv21
@@ -99,9 +101,17 @@ class _ScannerScreenState extends State<ScannerScreen> {
       print('Parsed result: price=$price, discount=$discount');
 
       if (price != null && discount != null) {
+        _navigationTimer?.cancel();
         _navigateToResult(price, discount);
       } else if (price != null) {
-        _navigateToManualDiscount(price);
+        _detectedPrice = price;
+        if (_navigationTimer == null || !_navigationTimer!.isActive) {
+          _navigationTimer = Timer(const Duration(seconds: 2), () {
+            if (_detectedPrice != null) {
+              _navigateToManualDiscount(_detectedPrice!);
+            }
+          });
+        }
       }
     }).whenComplete(() => _isBusy = false);
   }
@@ -120,20 +130,21 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _navigateToManualDiscount(double price) {
-    print('Navigating to ManualDiscountScreen with price=$price');
+    print('Navigating to ManualPriceEntryScreen with price=$price');
     if (_isNavigating) return;
     _isNavigating = true;
     _controller?.stopImageStream();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => ManualDiscountScreen(price: price),
+        builder: (context) => ManualPriceEntryScreen(initialPrice: price),
       ),
     ).then((_) => _isNavigating = false);
   }
   
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _controller?.dispose();
     _textRecognizer.close();
     super.dispose();

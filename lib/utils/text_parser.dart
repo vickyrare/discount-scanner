@@ -11,21 +11,12 @@ class TextParser {
       price = double.tryParse(priceString);
     }
 
-    // Regex to find discount (e.g., 20% off, 15%, discount 30)
-    final discountRegex = RegExp(r'(\d{1,2})\s?%?\s?(off|discount)?', caseSensitive: false);
-    final discountMatches = discountRegex.allMatches(text);
-
-    for (var match in discountMatches) {
-      // Avoid matching parts of the price as a discount
-      if (priceMatch != null && match.start >= priceMatch.start && match.end <= priceMatch.end) {
-        continue;
-      }
-      String discountString = match.group(1)!;
-      double? potentialDiscount = double.tryParse(discountString);
-      if (potentialDiscount != null && potentialDiscount < 100) {
-        discount = potentialDiscount;
-        break; // Take the first valid discount found
-      }
+    // Regex to find discount (e.g., 20% off, 15% off, discount 30%)
+    final discountRegex = RegExp(r'(\d{1,2})\s?(%|off|discount)', caseSensitive: false);
+    final discountMatch = discountRegex.firstMatch(text);
+    if (discountMatch != null) {
+      String discountString = discountMatch.group(1)!;
+      discount = double.tryParse(discountString);
     }
 
     return {'price': price, 'discount': discount};
