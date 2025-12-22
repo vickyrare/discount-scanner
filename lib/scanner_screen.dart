@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:discount_scanner/manual_discount_screen.dart';
 import 'package:discount_scanner/result_screen.dart';
 import 'package:discount_scanner/utils/text_parser.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
@@ -36,6 +38,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _cameras![0],
         ResolutionPreset.high,
         enableAudio: false,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.nv21
+            : ImageFormatGroup.bgra8888,
       );
       await _controller!.initialize();
       if (!mounted) {
@@ -58,18 +63,26 @@ class _ScannerScreenState extends State<ScannerScreen> {
             _cameras![0].sensorOrientation) ??
         InputImageRotation.rotation0deg;
 
-    final InputImageFormat format =
-        InputImageFormatValue.fromRawValue(image.format.raw) ??
-            InputImageFormat.nv21;
+    final InputImageFormat format = Platform.isAndroid
+        ? InputImageFormat.nv21
+        : InputImageFormat.bgra8888;
+
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final Plane plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    final InputImageMetadata metadata = InputImageMetadata(
+      size: Size(image.width.toDouble(), image.height.toDouble()),
+      rotation: rotation,
+      format: format,
+      bytesPerRow: image.planes[0].bytesPerRow,
+    );
 
     final InputImage inputImage = InputImage.fromBytes(
-      bytes: image.planes[0].bytes,
-      metadata: InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: rotation,
-        format: format,
-        bytesPerRow: image.planes[0].bytesPerRow,
-      ),
+      bytes: bytes,
+      metadata: metadata,
     );
 
     _textRecognizer.processImage(inputImage).then((RecognizedText recognizedText) {
@@ -77,9 +90,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _recognizedText = recognizedText.text;
       });
 
+      print('Recognized text: ${_recognizedText}');
+
       final parsedResult = TextParser.parse(recognizedText.text);
       final price = parsedResult['price'];
       final discount = parsedResult['discount'];
+
+      print('Parsed result: price=$price, discount=$discount');
 
       if (price != null && discount != null) {
         _navigateToResult(price, discount);
@@ -90,6 +107,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _navigateToResult(double price, double discount) {
+    print('Navigating to ResultScreen with price=$price, discount=$discount');
     if (_isNavigating) return;
     _isNavigating = true;
     _controller?.stopImageStream();
@@ -102,6 +120,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _navigateToManualDiscount(double price) {
+    print('Navigating to ManualDiscountScreen with price=$price');
     if (_isNavigating) return;
     _isNavigating = true;
     _controller?.stopImageStream();
@@ -112,7 +131,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       ),
     ).then((_) => _isNavigating = false);
   }
-
+  
   @override
   void dispose() {
     _controller?.dispose();
