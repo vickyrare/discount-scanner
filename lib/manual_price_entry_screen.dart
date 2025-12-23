@@ -64,16 +64,47 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextFormField(
-              controller: _priceController,
-              decoration: const InputDecoration(
-                labelText: 'Price',
-                prefixText: '\$',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _priceController,
+                    decoration: const InputDecoration(
+                      labelText: 'Price',
+                      prefixText: '\$',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}')),
+                    ],
+                  ),
+                ),
+                if (_finalPrice != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Final Price',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '\$${_finalPrice!.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -102,34 +133,14 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
                   style: ElevatedButton.styleFrom(
                     shape: const CircleBorder(),
                     padding: const EdgeInsets.all(10),
-                    backgroundColor: isSelected ? Theme.of(context).primaryColor : null,
+                    backgroundColor:
+                        isSelected ? Theme.of(context).primaryColor : null,
                     foregroundColor: isSelected ? Colors.white : null,
                   ),
                   child: Text('$discount%'),
                 );
               },
             ),
-            const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 20),
-            if (_finalPrice != null)
-              Column(
-                children: [
-                  const Text(
-                    'Final Price',
-                    style: TextStyle(fontSize: 24, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '\$${_finalPrice!.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
           ],
         ),
       ),
