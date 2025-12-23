@@ -1,4 +1,5 @@
 import 'package:discount_scanner/calculator_screen.dart';
+import 'package:discount_scanner/history_screen.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/scanner_screen.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +76,21 @@ class HomeScreen extends StatelessWidget {
               },
               icon: const Icon(Icons.calculate),
               label: const Text('Calculator'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                );
+              },
+              icon: const Icon(Icons.history),
+              label: const Text('History'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                 textStyle: const TextStyle(fontSize: 16),

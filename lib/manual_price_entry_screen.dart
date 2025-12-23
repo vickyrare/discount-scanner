@@ -1,3 +1,4 @@
+import 'package:discount_scanner/services/history_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -40,9 +41,19 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
 
   void _calculateFinalPrice() {
     if (_price != null && _discount != null) {
-      _finalPrice = _price! - (_price! * (_discount! / 100));
+      final finalPriceValue = _price! - (_price! * (_discount! / 100));
+      setState(() {
+        _finalPrice = finalPriceValue;
+      });
+      HistoryService.addCalculation(
+        price: _price!,
+        discount: _discount!,
+        finalPrice: finalPriceValue,
+      );
     } else {
-      _finalPrice = null;
+      setState(() {
+        _finalPrice = null;
+      });
     }
   }
 

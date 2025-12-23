@@ -1,3 +1,4 @@
+import 'package:discount_scanner/services/history_service.dart';
 import 'package:flutter/material.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -38,9 +39,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   void _calculateFinalPrice() {
     if (_selectedPrice != null && _selectedDiscount != null) {
+      final finalPriceValue = _selectedPrice! - (_selectedPrice! * (_selectedDiscount! / 100));
       setState(() {
-        _finalPrice = _selectedPrice! - (_selectedPrice! * (_selectedDiscount! / 100));
+        _finalPrice = finalPriceValue;
       });
+      HistoryService.addCalculation(
+        price: _selectedPrice!,
+        discount: _selectedDiscount!.toDouble(),
+        finalPrice: finalPriceValue,
+      );
     }
   }
 
@@ -66,7 +73,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               items: _prices.map((price) {
                 return DropdownMenuItem<double>(
                   value: price,
-                  child: Text('\$${price.toStringAsFixed(2)}'),
+                  child: Text('\$' + price.toStringAsFixed(2)),
                 );
               }).toList(),
               onChanged: (value) {
@@ -114,7 +121,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '\$${_finalPrice!.toStringAsFixed(2)}',
+                      '\$' + _finalPrice!.toStringAsFixed(2),
                       style: const TextStyle(
                         fontSize: 52,
                         fontWeight: FontWeight.bold,

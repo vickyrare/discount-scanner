@@ -1,15 +1,32 @@
+import 'package:discount_scanner/services/history_service.dart';
 import 'package:flutter/material.dart';
 
-class ResultScreen extends StatelessWidget {
+class ResultScreen extends StatefulWidget {
   final double price;
   final double discount;
 
   const ResultScreen({super.key, required this.price, required this.discount});
 
   @override
-  Widget build(BuildContext context) {
-    final double discountedPrice = price - (price * (discount / 100));
+  State<ResultScreen> createState() => _ResultScreenState();
+}
 
+class _ResultScreenState extends State<ResultScreen> {
+  late final double _finalPrice;
+
+  @override
+  void initState() {
+    super.initState();
+    _finalPrice = widget.price - (widget.price * (widget.discount / 100));
+    HistoryService.addCalculation(
+      price: widget.price,
+      discount: widget.discount,
+      finalPrice: _finalPrice,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Discounted Price'),
@@ -20,13 +37,13 @@ class ResultScreen extends StatelessWidget {
           children: <Widget>[
             _buildPriceCard(
               title: 'Original Price',
-              price: price,
+              price: widget.price,
               color: Colors.grey,
             ),
             const SizedBox(height: 20),
             _buildPriceCard(
               title: 'Discount',
-              price: discount,
+              price: widget.discount,
               isPercentage: true,
               color: Colors.orange,
             ),
@@ -35,7 +52,7 @@ class ResultScreen extends StatelessWidget {
             const SizedBox(height: 20),
             _buildPriceCard(
               title: 'Final Price',
-              price: discountedPrice,
+              price: _finalPrice,
               color: Colors.green,
               isLarge: true,
             ),
@@ -71,7 +88,7 @@ class ResultScreen extends StatelessWidget {
             Text(
               isPercentage
                   ? '${price.toStringAsFixed(0)}%'
-                  : '\$${price.toStringAsFixed(2)}',
+                  : '\${price.toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: isLarge ? 40 : 30,
                 fontWeight: FontWeight.bold,
