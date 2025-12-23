@@ -1,3 +1,4 @@
+import 'package:discount_scanner/calculator_screen.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/scanner_screen.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +36,6 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'Ready to scan a price tag?',
-              style: TextStyle(fontSize: 18.0),
-            ),
-            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
@@ -54,15 +50,35 @@ class HomeScreen extends StatelessWidget {
                 textStyle: const TextStyle(fontSize: 16),
               ),
             ),
-            const SizedBox(height: 10),
-            TextButton(
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ManualPriceEntryScreen()),
                 );
               },
-              child: const Text('Or enter price manually'),
+              icon: const Icon(Icons.edit),
+              label: const Text('Enter Price Manually'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CalculatorScreen()),
+                );
+              },
+              icon: const Icon(Icons.calculate),
+              label: const Text('Calculator'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                textStyle: const TextStyle(fontSize: 16),
+              ),
             ),
           ],
         ),

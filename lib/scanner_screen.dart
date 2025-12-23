@@ -26,6 +26,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   String _recognizedText = '';
   Timer? _navigationTimer;
   double? _detectedPrice;
+  double? _detectedDiscount;
 
   @override
   void initState() {
@@ -100,14 +101,20 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       print('Parsed result: price=$price, discount=$discount');
 
-      if (price != null && discount != null) {
-        _navigationTimer?.cancel();
-        _navigateToResult(price, discount);
-      } else if (price != null) {
+      if (price != null) {
         _detectedPrice = price;
+      }
+      if (discount != null) {
+        _detectedDiscount = discount;
+      }
+
+      if (_detectedPrice != null && _detectedDiscount != null) {
+        _navigationTimer?.cancel();
+        _navigateToResult(_detectedPrice!, _detectedDiscount!);
+      } else if (_detectedPrice != null) {
         if (_navigationTimer == null || !_navigationTimer!.isActive) {
-          _navigationTimer = Timer(const Duration(seconds: 2), () {
-            if (_detectedPrice != null) {
+          _navigationTimer = Timer(const Duration(seconds: 3), () {
+            if (_detectedPrice != null && _detectedDiscount == null) {
               _navigateToManualDiscount(_detectedPrice!);
             }
           });
@@ -126,7 +133,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
       MaterialPageRoute(
         builder: (context) => ResultScreen(price: price, discount: discount),
       ),
-    ).then((_) => _isNavigating = false);
+    ).then((_) {
+      _isNavigating = false;
+      // Restart camera stream if user comes back
+      if (mounted) {
+        _controller?.startImageStream(_processImage);
+      }
+    });
   }
 
   void _navigateToManualDiscount(double price) {
@@ -139,7 +152,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
       MaterialPageRoute(
         builder: (context) => ManualPriceEntryScreen(initialPrice: price),
       ),
-    ).then((_) => _isNavigating = false);
+    ).then((_) {
+      _isNavigating = false;
+      // Restart camera stream if user comes back
+      if (mounted) {
+        _controller?.startImageStream(_processImage);
+      }
+    });
   }
   
   @override
@@ -160,7 +179,22 @@ class _ScannerScreenState extends State<ScannerScreen> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan Price Tag')),
+      appBar: AppBar(
+        title: const Text('Scan Price Tag'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              _detectedPrice = null;
+              _detectedDiscount = null;
+              _navigationTimer?.cancel();
+              setState(() {
+                _recognizedText = '';
+              });
+            },
+          )
+        ],
+      ),
       body: Stack(
         children: [
           CameraPreview(_controller!),
