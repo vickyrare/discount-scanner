@@ -65,7 +65,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center, // Center align vertically
               children: [
                 Expanded(
                   child: TextFormField(
@@ -84,25 +84,27 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
                   ),
                 ),
                 if (_finalPrice != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16.0, top: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Final Price',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '\$${_finalPrice!.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Final Price',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Text(
+                            '\$${_finalPrice!.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
               ],
