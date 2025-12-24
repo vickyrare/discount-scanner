@@ -88,7 +88,7 @@ class _ResultScreenState extends State<ResultScreen> {
             Text(
               isPercentage
                   ? '${price.toStringAsFixed(0)}%'
-                  : '\${price.toStringAsFixed(2)}',
+                  : '\$${price.toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: isLarge ? 40 : 30,
                 fontWeight: FontWeight.bold,
