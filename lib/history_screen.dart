@@ -98,7 +98,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    'Original: \$${record.price.toStringAsFixed(2)}  |  Date: ${DateFormat.yMd().format(record.date)}',
+                    'Original: \$${record.price.toStringAsFixed(2)}  |  ${DateFormat('d/M/y').add_jm().format(record.date)}',
                   ),
                 ),
               );
