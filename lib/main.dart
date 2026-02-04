@@ -33,68 +33,90 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Discount Scanner'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           children: <Widget>[
-            ElevatedButton.icon(
+            _FeatureButton(
+              icon: Icons.camera_alt,
+              label: 'Scan Price Tag',
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ScannerScreen()),
                 );
               },
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Scan Price Tag'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                textStyle: const TextStyle(fontSize: 16),
-              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
+            _FeatureButton(
+              icon: Icons.edit,
+              label: 'Enter Price Manually',
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ManualPriceEntryScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const ManualPriceEntryScreen()),
                 );
               },
-              icon: const Icon(Icons.edit),
-              label: const Text('Enter Price Manually'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                textStyle: const TextStyle(fontSize: 16),
-              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
+            _FeatureButton(
+              icon: Icons.calculate,
+              label: 'Calculator',
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CalculatorScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const CalculatorScreen()),
                 );
               },
-              icon: const Icon(Icons.calculate),
-              label: const Text('Calculator'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                textStyle: const TextStyle(fontSize: 16),
-              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
+            _FeatureButton(
+              icon: Icons.history,
+              label: 'History',
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const HistoryScreen()),
                 );
               },
-              icon: const Icon(Icons.history),
-              label: const Text('History'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                textStyle: const TextStyle(fontSize: 16),
-              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeatureButton extends StatelessWidget {
+  const _FeatureButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(icon, size: 48, color: Theme.of(context).primaryColor),
+            const SizedBox(height: 16),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),
