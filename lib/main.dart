@@ -1,5 +1,6 @@
 import 'package:discount_scanner/calculator_screen.dart';
 import 'package:discount_scanner/history_screen.dart';
+import 'package:discount_scanner/how_to_screen.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/scanner_screen.dart';
 import 'package:flutter/material.dart';
@@ -29,58 +30,86 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonSize = (screenWidth - 16 * 3) / 2;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Discount Scanner'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: <Widget>[
-            _FeatureButton(
-              icon: Icons.camera_alt,
-              label: 'Scan Price Tag',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ScannerScreen()),
-                );
-              },
+        child: Column(
+          children: [
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.0,
+                children: <Widget>[
+                  _FeatureButton(
+                    icon: Icons.camera_alt,
+                    label: 'Scan Price Tag',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ScannerScreen()),
+                      );
+                    },
+                  ),
+                  _FeatureButton(
+                    icon: Icons.edit,
+                    label: 'Enter Price Manually',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const ManualPriceEntryScreen()),
+                      );
+                    },
+                  ),
+                  _FeatureButton(
+                    icon: Icons.calculate,
+                    label: 'Calculator',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const CalculatorScreen()),
+                      );
+                    },
+                  ),
+                  _FeatureButton(
+                    icon: Icons.history,
+                    label: 'History',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const HistoryScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-            _FeatureButton(
-              icon: Icons.edit,
-              label: 'Enter Price Manually',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ManualPriceEntryScreen()),
-                );
-              },
-            ),
-            _FeatureButton(
-              icon: Icons.calculate,
-              label: 'Calculator',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const CalculatorScreen()),
-                );
-              },
-            ),
-            _FeatureButton(
-              icon: Icons.history,
-              label: 'History',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HistoryScreen()),
-                );
-              },
+            const SizedBox(height: 16),
+            SizedBox(
+              width: buttonSize,
+              height: buttonSize,
+              child: _FeatureButton(
+                icon: Icons.help_outline,
+                label: 'How To Use',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HowToScreen()),
+                  );
+                },
+              ),
             ),
           ],
         ),
