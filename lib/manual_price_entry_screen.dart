@@ -16,6 +16,8 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
   double? _discount;
   double? _finalPrice;
 
+  final List<int> _discounts = List.generate(19, (index) => (index + 1) * 5);
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +36,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
 
   void _selectDiscount(double discount) {
     setState(() {
-      _discount = discount;
+      _discount = _discount == discount ? null : discount;
       _calculateFinalPrice();
     });
   }
@@ -57,6 +59,15 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
     }
   }
 
+  void _clearAll() {
+    _priceController.clear();
+    setState(() {
+      _price = null;
+      _discount = null;
+      _finalPrice = null;
+    });
+  }
+
   @override
   void dispose() {
     _priceController.removeListener(_updatePrice);
@@ -69,94 +80,144 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manual Calculation'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: _clearAll,
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center, // Center align vertically
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _priceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Price',
-                      prefixText: '\$',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}')),
-                    ],
-                  ),
-                ),
-                if (_finalPrice != null)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Final Price',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '\$${_finalPrice!.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+            _buildPriceInputCard(),
             const SizedBox(height: 20),
-            const Divider(),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                'Select Discount:',
-                style: TextStyle(fontSize: 18),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: _finalPrice != null
+                  ? _buildFinalPriceDisplay(_finalPrice!)
+                  : const SizedBox.shrink(),
+            ),
+            const Divider(height: 40),
+            _buildDiscountSelector(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPriceInputCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Original Price',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
+            TextFormField(
+              controller: _priceController,
+              decoration: const InputDecoration(
+                prefixText: '\$'
+,
+                border: InputBorder.none,
+                hintText: 'Enter price',
               ),
-              itemCount: 19, // 5, 10, 15, ..., 95
-              itemBuilder: (context, index) {
-                final discount = (index + 1) * 5;
-                final isSelected = _discount == discount.toDouble();
-                return ElevatedButton(
-                  onPressed: () => _selectDiscount(discount.toDouble()),
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(10),
-                    backgroundColor:
-                        isSelected ? Theme.of(context).primaryColor : null,
-                    foregroundColor: isSelected ? Colors.white : null,
-                  ),
-                  child: Text('$discount%'),
-                );
-              },
+              style:
+                  const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFinalPriceDisplay(double finalPrice) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: Colors.green[50],
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            const Text(
+              'Final Price',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.green,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '\$${finalPrice.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 42,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDiscountSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 4.0, bottom: 12),
+          child: Text(
+            'Select Discount:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Wrap(
+          spacing: 10.0,
+          runSpacing: 10.0,
+          children: _discounts.map((discount) {
+            final isSelected = _discount == discount.toDouble();
+            return ChoiceChip(
+              label: Text('$discount%'),
+              selected: isSelected,
+              onSelected: (selected) {
+                _selectDiscount(discount.toDouble());
+              },
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+              ),
+              selectedColor: Theme.of(context).primaryColor,
+              backgroundColor: Colors.grey[200],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey[300]!,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
