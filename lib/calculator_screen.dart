@@ -39,7 +39,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   void _calculateFinalPrice() {
     if (_selectedPrice != null && _selectedDiscount != null) {
-      final finalPriceValue = _selectedPrice! - (_selectedPrice! * (_selectedDiscount! / 100));
+      final finalPriceValue =
+          _selectedPrice! - (_selectedPrice! * (_selectedDiscount! / 100));
       setState(() {
         _finalPrice = finalPriceValue;
       });
@@ -57,80 +58,126 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       appBar: AppBar(
         title: const Text('Discount Calculator'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Price Dropdown
-            DropdownButtonFormField<double>(
-              value: _selectedPrice,
-              hint: const Text('Select Price'),
-              decoration: const InputDecoration(
-                labelText: 'Original Price',
-                border: OutlineInputBorder(),
+            _buildDropdownCard(
+              label: 'Original Price',
+              child: DropdownButtonFormField<double>(
+                value: _selectedPrice,
+                hint: const Text('Select Price'),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                ),
+                items: _prices.map((price) {
+                  return DropdownMenuItem<double>(
+                    value: price,
+                    child: Text('${price.toStringAsFixed(2)}'),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedPrice = value;
+                  });
+                  _calculateFinalPrice();
+                },
               ),
-              items: _prices.map((price) {
-                return DropdownMenuItem<double>(
-                  value: price,
-                  child: Text('\$' + price.toStringAsFixed(2)),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedPrice = value;
-                });
-                _calculateFinalPrice();
-              },
             ),
             const SizedBox(height: 20),
-
-            // Discount Dropdown
-            DropdownButtonFormField<int>(
-              value: _selectedDiscount,
-              hint: const Text('Select Discount'),
-              decoration: const InputDecoration(
-                labelText: 'Discount Percentage',
-                border: OutlineInputBorder(),
+            _buildDropdownCard(
+              label: 'Discount Percentage',
+              child: DropdownButtonFormField<int>(
+                value: _selectedDiscount,
+                hint: const Text('Select Discount'),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                ),
+                items: _discounts.map((discount) {
+                  return DropdownMenuItem<int>(
+                    value: discount,
+                    child: Text('$discount%'),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedDiscount = value;
+                  });
+                  _calculateFinalPrice();
+                },
               ),
-              items: _discounts.map((discount) {
-                return DropdownMenuItem<int>(
-                  value: discount,
-                  child: Text('$discount%'),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDiscount = value;
-                });
-                _calculateFinalPrice();
-              },
             ),
             const SizedBox(height: 30),
             const Divider(),
             const SizedBox(height: 30),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              child: _finalPrice != null
+                  ? _buildFinalPriceDisplay(_finalPrice!)
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // Final Price Display
-            if (_finalPrice != null)
-              Center(
-                child: Column(
-                  children: [
-                    const Text(
-                      'Final Price',
-                      style: TextStyle(fontSize: 24, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '\$' + _finalPrice!.toStringAsFixed(2),
-                      style: const TextStyle(
-                        fontSize: 52,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
+  Widget _buildDropdownCard({required String label, required Widget child}) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
+            ),
+            child,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFinalPriceDisplay(double finalPrice) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: Colors.green[50],
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            const Text(
+              'Final Price',
+              style: TextStyle(
+                fontSize: 24,
+                color: Colors.green,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '${finalPrice.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 52,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
           ],
         ),
       ),
