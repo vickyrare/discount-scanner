@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
@@ -23,7 +24,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
   final TextRecognizer _textRecognizer = TextRecognizer();
   bool _isBusy = false;
   bool _isNavigating = false;
-  String _recognizedText = '';
   Timer? _navigationTimer;
   double? _detectedPrice;
   double? _detectedDiscount;
@@ -89,23 +89,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
 
     _textRecognizer.processImage(inputImage).then((RecognizedText recognizedText) {
-      setState(() {
-        _recognizedText = recognizedText.text;
-      });
-
-      print('Recognized text: ${_recognizedText}');
-
       final parsedResult = TextParser.parse(recognizedText.text);
       final price = parsedResult['price'];
       final discount = parsedResult['discount'];
 
-      print('Parsed result: price=$price, discount=$discount');
-
       if (price != null) {
-        _detectedPrice = price;
+        setState(() => _detectedPrice = price);
       }
       if (discount != null) {
-        _detectedDiscount = discount;
+        setState(() => _detectedDiscount = discount);
       }
 
       if (_detectedPrice != null && _detectedDiscount != null) {
@@ -113,7 +105,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _navigateToResult(_detectedPrice!, _detectedDiscount!);
       } else if (_detectedPrice != null) {
         if (_navigationTimer == null || !_navigationTimer!.isActive) {
-          _navigationTimer = Timer(const Duration(seconds: 3), () {
+          _navigationTimer = Timer(const Duration(seconds: 2), () {
             if (_detectedPrice != null && _detectedDiscount == null) {
               _navigateToManualDiscount(_detectedPrice!);
             }
@@ -124,7 +116,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _navigateToResult(double price, double discount) {
-    print('Navigating to ResultScreen with price=$price, discount=$discount');
     if (_isNavigating) return;
     _isNavigating = true;
     _controller?.stopImageStream();
@@ -133,17 +124,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
       MaterialPageRoute(
         builder: (context) => ResultScreen(price: price, discount: discount),
       ),
-    ).then((_) {
-      _isNavigating = false;
-      // Restart camera stream if user comes back
-      if (mounted) {
-        _controller?.startImageStream(_processImage);
-      }
-    });
+    ).then((_) => _resetState());
   }
 
   void _navigateToManualDiscount(double price) {
-    print('Navigating to ManualPriceEntryScreen with price=$price');
     if (_isNavigating) return;
     _isNavigating = true;
     _controller?.stopImageStream();
@@ -152,15 +136,20 @@ class _ScannerScreenState extends State<ScannerScreen> {
       MaterialPageRoute(
         builder: (context) => ManualPriceEntryScreen(initialPrice: price),
       ),
-    ).then((_) {
-      _isNavigating = false;
-      // Restart camera stream if user comes back
-      if (mounted) {
-        _controller?.startImageStream(_processImage);
-      }
-    });
+    ).then((_) => _resetState());
   }
-  
+
+  void _resetState() {
+    _isNavigating = false;
+    _detectedPrice = null;
+    _detectedDiscount = null;
+    _navigationTimer?.cancel();
+    if (mounted) {
+      _controller?.startImageStream(_processImage);
+    }
+    setState(() {});
+  }
+
   @override
   void dispose() {
     _navigationTimer?.cancel();
@@ -171,48 +160,126 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isCameraInitialized) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan Price Tag'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              _detectedPrice = null;
-              _detectedDiscount = null;
-              _navigationTimer?.cancel();
-              setState(() {
-                _recognizedText = '';
-              });
-            },
-          )
-        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          CameraPreview(_controller!),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              color: Colors.black54,
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                _recognizedText,
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          ),
+          _buildCameraPreview(),
+          _buildViewfinderOverlay(),
+          if (_isBusy)
+            const LinearProgressIndicator(),
+          _buildInfoPanel(),
         ],
       ),
     );
   }
+
+  Widget _buildCameraPreview() {
+    if (!_isCameraInitialized || _controller == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Positioned.fill(
+      child: CameraPreview(_controller!),
+    );
+  }
+
+  Widget _buildViewfinderOverlay() {
+    return CustomPaint(
+      size: Size.infinite,
+      painter: ViewfinderPainter(),
+    );
+  }
+
+  Widget _buildInfoPanel() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            color: Colors.black.withOpacity(0.3),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Point camera at a price tag',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildInfoItem('Price', _detectedPrice, ''
+),
+                    _buildInfoItem('Discount', _detectedDiscount, '%'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(String label, double? value, String suffix) {
+    final displayValue = value != null
+        ? (suffix == '%'
+            ? value.toInt().toString()
+            : value.toStringAsFixed(2))
+        : '---';
+
+    return Column(
+      children: [
+        Text(label,
+            style: const TextStyle(color: Colors.white70, fontSize: 14)),
+        const SizedBox(height: 4),
+        Text('$displayValue$suffix',
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+}
+
+class ViewfinderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final frame = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: size.center(Offset.zero),
+        width: size.width * 0.8,
+        height: size.height * 0.3,
+      ),
+      const Radius.circular(12),
+    );
+
+    final backgroundPaint = Paint()..color = Colors.black.withOpacity(0.5);
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final path = Path.combine(
+      PathOperation.difference,
+      Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height)),
+      Path()..addRRect(frame),
+    );
+
+    canvas.drawPath(path, backgroundPaint);
+    canvas.drawRRect(frame, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
