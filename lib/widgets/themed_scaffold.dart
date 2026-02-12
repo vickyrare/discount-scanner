@@ -6,12 +6,14 @@ class ThemedScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget body;
   final bool extendBodyBehindAppBar;
+  final Widget? bottomNavigationBar;
 
   const ThemedScaffold({
     super.key,
     this.appBar,
     required this.body,
     this.extendBodyBehindAppBar = false,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -26,6 +28,7 @@ class ThemedScaffold extends StatelessWidget {
         },
         child: const Icon(Icons.brightness_6),
       ),
+      bottomNavigationBar: bottomNavigationBar,
     );
   }
 }

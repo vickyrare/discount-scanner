@@ -49,137 +49,80 @@ class MyApp extends StatelessWidget {
             cardColor: Colors.grey[850],
           ),
           themeMode: themeProvider.themeMode,
-          home: const HomeScreen(),
+          home: const MainScreen(),
         );
       },
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final buttonSize = (screenWidth - 16 * 3) / 2;
-
-    return ThemedScaffold(
-      appBar: AppBar(
-        title: const Text('Discount Scanner'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.0,
-                children: <Widget>[
-                  _FeatureButton(
-                    icon: Icons.camera_alt,
-                    label: 'Scan Price Tag',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ScannerScreen()),
-                      );
-                    },
-                  ),
-                  _FeatureButton(
-                    icon: Icons.edit,
-                    label: 'Enter Price Manually',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const ManualPriceEntryScreen()),
-                      );
-                    },
-                  ),
-                  _FeatureButton(
-                    icon: Icons.calculate,
-                    label: 'Calculator',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const CalculatorScreen()),
-                      );
-                    },
-                  ),
-                  _FeatureButton(
-                    icon: Icons.history,
-                    label: 'History',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HistoryScreen()),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: buttonSize,
-              height: buttonSize,
-              child: _FeatureButton(
-                icon: Icons.help_outline,
-                label: 'How To Use',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HowToScreen()),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _FeatureButton extends StatelessWidget {
-  const _FeatureButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
+  final List<Widget> _screens = [
+    const ScannerScreen(),
+    const ManualPriceEntryScreen(),
+    const CalculatorScreen(),
+    const HistoryScreen(),
+    const HowToScreen(),
+  ];
+
+  final List<String> _screenTitles = const [
+    'Scan Price Tag',
+    'Manual Entry',
+    'Calculator',
+    'History',
+    'How to Use',
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(icon, size: 48, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
+    return ThemedScaffold(
+      appBar: AppBar(
+        title: Text(_screenTitles[_selectedIndex]),
+      ),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt),
+            label: 'Scan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.edit),
+            label: 'Manual',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calculate),
+            label: 'Calculator',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.help_outline),
+            label: 'How To',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
+        onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }
