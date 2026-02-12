@@ -49,7 +49,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         discount: _selectedDiscount!.toDouble(),
         finalPrice: finalPriceValue,
       );
+    } else {
+      setState(() {
+        _finalPrice = null;
+      });
     }
+  }
+
+  void _selectDiscount(int discount) {
+    setState(() {
+      _selectedDiscount = _selectedDiscount == discount ? null : discount;
+      _calculateFinalPrice();
+    });
   }
 
   @override
@@ -87,29 +98,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            _buildDropdownCard(
-              label: 'Discount Percentage',
-              child: DropdownButtonFormField<int>(
-                value: _selectedDiscount,
-                hint: const Text('Select Discount'),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                ),
-                items: _discounts.map((discount) {
-                  return DropdownMenuItem<int>(
-                    value: discount,
-                    child: Text('$discount%'),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedDiscount = value;
-                  });
-                  _calculateFinalPrice();
-                },
-              ),
-            ),
+            _buildDiscountSelector(),
             const SizedBox(height: 30),
             const Divider(),
             const SizedBox(height: 30),
@@ -122,6 +111,48 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDiscountSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 4.0, bottom: 12),
+          child: Text(
+            'Select Discount:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+        ),
+        Wrap(
+          spacing: 10.0,
+          runSpacing: 10.0,
+          children: _discounts.map((discount) {
+            final isSelected = _selectedDiscount == discount;
+            return ChoiceChip(
+              label: Text('$discount%'),
+              selected: isSelected,
+              onSelected: (selected) {
+                _selectDiscount(discount);
+              },
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.black,
+              ),
+              selectedColor: Theme.of(context).primaryColor,
+              backgroundColor: Colors.grey[200],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey[300]!,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
