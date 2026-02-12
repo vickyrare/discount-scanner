@@ -1,4 +1,5 @@
 import 'package:discount_scanner/services/history_service.dart';
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -31,7 +32,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Calculation History'),
         actions: [

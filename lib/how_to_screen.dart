@@ -1,3 +1,4 @@
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class HowToScreen extends StatelessWidget {
@@ -5,7 +6,7 @@ class HowToScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('How to Use'),
       ),
@@ -54,7 +55,7 @@ class HowToScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 40, color: Theme.of(context).primaryColor),
+          Icon(icon, size: 40, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -62,13 +63,12 @@ class HowToScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 16, color: Colors.black54),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),

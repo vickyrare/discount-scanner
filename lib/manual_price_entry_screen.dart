@@ -1,4 +1,5 @@
 import 'package:discount_scanner/services/history_service.dart';
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -77,7 +78,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Manual Calculation'),
         actions: [
@@ -166,7 +167,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '\$${finalPrice.toStringAsFixed(2)}',
+              '\${finalPrice.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontSize: 42,
                 fontWeight: FontWeight.bold,

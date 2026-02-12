@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/result_screen.dart';
 import 'package:discount_scanner/utils/text_parser.dart';
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -160,7 +161,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Scan Price Tag'),
         backgroundColor: Colors.transparent,

@@ -1,4 +1,5 @@
 import 'package:discount_scanner/services/history_service.dart';
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -65,7 +66,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Discount Calculator'),
       ),

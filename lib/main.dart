@@ -3,10 +3,29 @@ import 'package:discount_scanner/history_screen.dart';
 import 'package:discount_scanner/how_to_screen.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/scanner_screen.dart';
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
+}
+
+class ThemeProvider extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -14,13 +33,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Discount Scanner',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: const HomeScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'Discount Scanner',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            brightness: Brightness.light,
+          ),
+          darkTheme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            brightness: Brightness.dark,
+            cardColor: Colors.grey[850],
+          ),
+          themeMode: themeProvider.themeMode,
+          home: const HomeScreen(),
+        );
+      },
     );
   }
 }
@@ -33,7 +64,7 @@ class HomeScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final buttonSize = (screenWidth - 16 * 3) / 2;
 
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Discount Scanner'),
       ),
@@ -140,12 +171,12 @@ class _FeatureButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, size: 48, color: Theme.of(context).primaryColor),
+            Icon(icon, size: 48, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ],
         ),

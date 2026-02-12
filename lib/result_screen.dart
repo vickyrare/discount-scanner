@@ -1,4 +1,5 @@
 import 'package:discount_scanner/services/history_service.dart';
+import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -27,7 +28,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Discounted Price'),
       ),
