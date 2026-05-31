@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:discount_scanner/app_theme.dart';
 import 'package:camera/camera.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/result_screen.dart';
@@ -63,8 +64,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
     _isBusy = true;
 
-    final InputImageRotation rotation = InputImageRotationValue.fromRawValue(
-            _cameras![0].sensorOrientation) ??
+    final InputImageRotation rotation =
+        InputImageRotationValue.fromRawValue(_cameras![0].sensorOrientation) ??
         InputImageRotation.rotation0deg;
 
     final InputImageFormat format = Platform.isAndroid
@@ -89,31 +90,34 @@ class _ScannerScreenState extends State<ScannerScreen> {
       metadata: metadata,
     );
 
-    _textRecognizer.processImage(inputImage).then((RecognizedText recognizedText) {
-      final parsedResult = TextParser.parse(recognizedText.text);
-      final price = parsedResult['price'];
-      final discount = parsedResult['discount'];
+    _textRecognizer
+        .processImage(inputImage)
+        .then((RecognizedText recognizedText) {
+          final parsedResult = TextParser.parse(recognizedText.text);
+          final price = parsedResult['price'];
+          final discount = parsedResult['discount'];
 
-      if (price != null) {
-        setState(() => _detectedPrice = price);
-      }
-      if (discount != null) {
-        setState(() => _detectedDiscount = discount);
-      }
+          if (price != null) {
+            setState(() => _detectedPrice = price);
+          }
+          if (discount != null) {
+            setState(() => _detectedDiscount = discount);
+          }
 
-      if (_detectedPrice != null && _detectedDiscount != null) {
-        _navigationTimer?.cancel();
-        _navigateToResult(_detectedPrice!, _detectedDiscount!);
-      } else if (_detectedPrice != null) {
-        if (_navigationTimer == null || !_navigationTimer!.isActive) {
-          _navigationTimer = Timer(const Duration(seconds: 2), () {
-            if (_detectedPrice != null && _detectedDiscount == null) {
-              _navigateToManualDiscount(_detectedPrice!);
+          if (_detectedPrice != null && _detectedDiscount != null) {
+            _navigationTimer?.cancel();
+            _navigateToResult(_detectedPrice!, _detectedDiscount!);
+          } else if (_detectedPrice != null) {
+            if (_navigationTimer == null || !_navigationTimer!.isActive) {
+              _navigationTimer = Timer(const Duration(seconds: 2), () {
+                if (_detectedPrice != null && _detectedDiscount == null) {
+                  _navigateToManualDiscount(_detectedPrice!);
+                }
+              });
             }
-          });
-        }
-      }
-    }).whenComplete(() => _isBusy = false);
+          }
+        })
+        .whenComplete(() => _isBusy = false);
   }
 
   void _navigateToResult(double price, double discount) {
@@ -164,16 +168,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
     return ThemedScaffold(
       appBar: AppBar(
         title: const Text('Scan Price Tag'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        foregroundColor: Colors.white,
       ),
       extendBodyBehindAppBar: true,
       body: Stack(
         children: [
           _buildCameraPreview(),
           _buildViewfinderOverlay(),
-          if (_isBusy)
-            const LinearProgressIndicator(),
+          if (_isBusy) const LinearProgressIndicator(),
           _buildInfoPanel(),
         ],
       ),
@@ -184,16 +186,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
     if (!_isCameraInitialized || _controller == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    return Positioned.fill(
-      child: CameraPreview(_controller!),
-    );
+    return Positioned.fill(child: CameraPreview(_controller!));
   }
 
   Widget _buildViewfinderOverlay() {
-    return CustomPaint(
-      size: Size.infinite,
-      painter: ViewfinderPainter(),
-    );
+    return CustomPaint(size: Size.infinite, painter: ViewfinderPainter());
   }
 
   Widget _buildInfoPanel() {
@@ -206,20 +203,30 @@ class _ScannerScreenState extends State<ScannerScreen> {
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             padding: const EdgeInsets.all(20),
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.42),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Point camera at a price tag',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.center_focus_strong, color: AppTheme.amber),
+                    SizedBox(width: 8),
+                    Text(
+                      'Point camera at a price tag',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildInfoItem('Price', _detectedPrice, ''
-),
+                    _buildInfoItem('Price', _detectedPrice, ''),
                     _buildInfoItem('Discount', _detectedDiscount, '%'),
                   ],
                 ),
@@ -233,22 +240,34 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   Widget _buildInfoItem(String label, double? value, String suffix) {
     final displayValue = value != null
-        ? (suffix == '%'
-            ? value.toInt().toString()
-            : value.toStringAsFixed(2))
+        ? (suffix == '%' ? value.toInt().toString() : value.toStringAsFixed(2))
         : '---';
 
-    return Column(
-      children: [
-        Text(label,
-            style: const TextStyle(color: Colors.white70, fontSize: 14)),
-        const SizedBox(height: 4),
-        Text('$displayValue$suffix',
+    return Container(
+      width: 132,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$displayValue$suffix',
             style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold)),
-      ],
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -265,11 +284,12 @@ class ViewfinderPainter extends CustomPainter {
       const Radius.circular(12),
     );
 
-    final backgroundPaint = Paint()..color = Colors.black.withOpacity(0.5);
+    final backgroundPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.48);
     final borderPaint = Paint()
-      ..color = Colors.white
+      ..color = AppTheme.amber
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 3;
 
     final path = Path.combine(
       PathOperation.difference,

@@ -1,3 +1,4 @@
+import 'package:discount_scanner/app_theme.dart';
 import 'package:discount_scanner/services/history_service.dart';
 import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -29,33 +30,33 @@ class _ResultScreenState extends State<ResultScreen> {
   @override
   Widget build(BuildContext context) {
     return ThemedScaffold(
-      appBar: AppBar(
-        title: const Text('Discounted Price'),
-      ),
-      body: Center(
+      appBar: AppBar(title: const Text('Discounted Price')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _buildPriceCard(
-              title: 'Original Price',
-              price: widget.price,
-              color: Colors.grey,
-            ),
-            const SizedBox(height: 20),
-            _buildPriceCard(
-              title: 'Discount',
-              price: widget.discount,
-              isPercentage: true,
-              color: Colors.orange,
-            ),
-            const SizedBox(height: 20),
-            const Icon(Icons.arrow_downward, size: 40, color: Colors.grey),
-            const SizedBox(height: 20),
-            _buildPriceCard(
-              title: 'Final Price',
-              price: _finalPrice,
-              color: Colors.green,
-              isLarge: true,
+            _buildHeroResult(),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPriceCard(
+                    title: 'Original',
+                    price: widget.price,
+                    icon: Icons.sell_outlined,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildPriceCard(
+                    title: 'Discount',
+                    price: widget.discount,
+                    icon: Icons.percent,
+                    isPercentage: true,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -63,37 +64,74 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
+  Widget _buildHeroResult() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.navy,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.check, color: AppTheme.amber, size: 34),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Final Price',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _finalPrice.toStringAsFixed(2),
+            style: const TextStyle(
+              color: AppTheme.amber,
+              fontSize: 56,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPriceCard({
     required String title,
     required double price,
-    required Color color,
+    required IconData icon,
     bool isPercentage = false,
-    bool isLarge = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Container(
-        width: 250,
-        padding: const EdgeInsets.all(20),
+      color: colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: isLarge ? 20 : 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 10),
+            Icon(icon, color: colorScheme.primary),
+            const SizedBox(height: 12),
+            Text(title, style: TextStyle(color: colorScheme.onSurfaceVariant)),
+            const SizedBox(height: 4),
             Text(
               isPercentage
                   ? '${price.toStringAsFixed(0)}%'
-                  : '${price.toStringAsFixed(2)}',
+                  : price.toStringAsFixed(2),
               style: TextStyle(
-                fontSize: isLarge ? 40 : 30,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: color,
+                color: colorScheme.onSurface,
               ),
             ),
           ],

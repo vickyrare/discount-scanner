@@ -1,3 +1,4 @@
+import 'package:discount_scanner/app_theme.dart';
 import 'package:discount_scanner/services/history_service.dart';
 import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -67,14 +68,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   @override
   Widget build(BuildContext context) {
     return ThemedScaffold(
-      appBar: AppBar(
-        title: const Text('Discount Calculator'),
-      ),
+      appBar: AppBar(title: const Text('Discount Calculator')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _buildHeader(),
+            const SizedBox(height: 20),
             _buildDropdownCard(
               label: 'Original Price',
               child: DropdownButtonFormField<double>(
@@ -87,7 +88,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 items: _prices.map((price) {
                   return DropdownMenuItem<double>(
                     value: price,
-                    child: Text('${price.toStringAsFixed(2)}'),
+                    child: Text(price.toStringAsFixed(2)),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -100,9 +101,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
             const SizedBox(height: 20),
             _buildDiscountSelector(),
-            const SizedBox(height: 30),
-            const Divider(),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),
               child: _finalPrice != null
@@ -115,40 +114,77 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
+  Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.speed, color: Colors.white, size: 36),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Quickly compare common shelf discounts.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDiscountSelector() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4.0, bottom: 12),
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, bottom: 12),
           child: Text(
             'Select Discount:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
         Wrap(
-          spacing: 10.0,
-          runSpacing: 10.0,
+          spacing: 8,
+          runSpacing: 8,
           children: _discounts.map((discount) {
             final isSelected = _selectedDiscount == discount;
-            return ChoiceChip(
-              label: Text('$discount%'),
-              selected: isSelected,
-              onSelected: (selected) {
-                _selectDiscount(discount);
-              },
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.black,
-              ),
-              selectedColor: Theme.of(context).primaryColor,
-              backgroundColor: Colors.grey[200],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
+            return SizedBox(
+              width: 68,
+              child: ChoiceChip(
+                label: Center(child: Text('$discount%')),
+                selected: isSelected,
+                onSelected: (selected) {
+                  _selectDiscount(discount);
+                },
+                labelStyle: TextStyle(
                   color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey[300]!,
+                      ? colorScheme.onPrimary
+                      : colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
                 ),
+                selectedColor: colorScheme.primary,
+                backgroundColor: colorScheme.surface,
               ),
             );
           }).toList(),
@@ -158,25 +194,25 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   Widget _buildDropdownCard({required String label, required Widget child}) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: colorScheme.surface,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.w500,
-                ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3,
               ),
             ),
+            const SizedBox(height: 8),
             child,
           ],
         ),
@@ -185,29 +221,30 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   Widget _buildFinalPriceDisplay(double finalPrice) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      color: Colors.green[50],
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.navy,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
             const Text(
               'Final Price',
               style: TextStyle(
-                fontSize: 24,
-                color: Colors.green,
-                fontWeight: FontWeight.w300,
+                fontSize: 16,
+                color: Colors.white70,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
-              '${finalPrice.toStringAsFixed(2)}',
+              finalPrice.toStringAsFixed(2),
               style: const TextStyle(
                 fontSize: 52,
                 fontWeight: FontWeight.bold,
-                color: Colors.green,
+                color: AppTheme.amber,
               ),
             ),
           ],

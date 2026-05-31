@@ -1,4 +1,5 @@
-import 'package:discount_scanner/main.dart';
+import 'package:discount_scanner/app_theme.dart';
+import 'package:discount_scanner/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,15 +19,41 @@ class ThemedScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: appBar,
-      body: body,
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isDark
+                ? const [
+                    AppTheme.darkSurface,
+                    Color(0xFF14252A),
+                    AppTheme.darkSurface,
+                  ]
+                : const [
+                    AppTheme.mint,
+                    AppTheme.lightSurface,
+                    AppTheme.lightSurface,
+                  ],
+          ),
+        ),
+        child: SafeArea(
+          top: appBar == null && !extendBodyBehindAppBar,
+          bottom: bottomNavigationBar == null,
+          child: body,
+        ),
+      ),
       extendBodyBehindAppBar: extendBodyBehindAppBar,
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.small(
+        tooltip: 'Toggle theme',
         onPressed: () {
           Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
         },
-        child: const Icon(Icons.brightness_6),
+        child: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
       ),
       bottomNavigationBar: bottomNavigationBar,
     );

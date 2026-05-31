@@ -1,9 +1,10 @@
+import 'package:discount_scanner/app_theme.dart';
 import 'package:discount_scanner/calculator_screen.dart';
 import 'package:discount_scanner/history_screen.dart';
 import 'package:discount_scanner/how_to_screen.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
 import 'package:discount_scanner/scanner_screen.dart';
-import 'package:discount_scanner/widgets/themed_scaffold.dart';
+import 'package:discount_scanner/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,18 +17,6 @@ void main() {
   );
 }
 
-class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
-
-  ThemeMode get themeMode => _themeMode;
-
-  void toggleTheme() {
-    _themeMode =
-        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
-  }
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -37,17 +26,9 @@ class MyApp extends StatelessWidget {
       builder: (context, themeProvider, child) {
         return MaterialApp(
           title: 'Discount Scanner',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            brightness: Brightness.light,
-          ),
-          darkTheme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            brightness: Brightness.dark,
-            cardColor: Colors.grey[850],
-          ),
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
           themeMode: themeProvider.themeMode,
           home: const MainScreen(),
         );
@@ -74,14 +55,6 @@ class _MainScreenState extends State<MainScreen> {
     const HowToScreen(),
   ];
 
-  final List<String> _screenTitles = const [
-    'Scan Price Tag',
-    'Manual Entry',
-    'Calculator',
-    'History',
-    'How to Use',
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -90,29 +63,17 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ThemedScaffold(
-      appBar: AppBar(
-        title: Text(_screenTitles[_selectedIndex]),
-      ),
+    return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
-            label: 'Scan',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.edit),
-            label: 'Manual',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Scan'),
+          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Manual'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calculate),
             label: 'Calculator',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
           BottomNavigationBarItem(
             icon: Icon(Icons.help_outline),
             label: 'How To',

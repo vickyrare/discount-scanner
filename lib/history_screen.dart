@@ -1,3 +1,4 @@
+import 'package:discount_scanner/app_theme.dart';
 import 'package:discount_scanner/services/history_service.dart';
 import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -37,6 +38,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         title: const Text('Calculation History'),
         actions: [
           IconButton(
+            tooltip: 'Clear history',
             icon: const Icon(Icons.delete_forever),
             onPressed: () => _showClearHistoryDialog(context),
           ),
@@ -54,8 +56,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
           }
 
           final history = snapshot.data!;
-          return ListView.builder(
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
             itemCount: history.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final record = history[index];
               return _buildHistoryCard(record);
@@ -71,11 +75,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           title: const Text('Clear History?'),
-          content:
-              const Text('This will permanently delete all saved calculations.'),
+          content: const Text(
+            'This will permanently delete all saved calculations.',
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text('Cancel'),
@@ -96,21 +102,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.history_toggle_off, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 20),
-          Text(
-            'No history yet.',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+      child: Card(
+        margin: const EdgeInsets.all(24),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.history_toggle_off,
+                size: 64,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'No history yet.',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your calculations will appear here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
+            ],
           ),
-          const Text(
-            'Your calculations will appear here.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -136,21 +158,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHistoryCard(CalculationRecord record) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: colorScheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColorLight,
+            Container(
+              width: 54,
+              height: 54,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppTheme.mint,
+                borderRadius: BorderRadius.circular(8),
+              ),
               child: Text(
                 '${record.discount.toInt()}%',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColorDark),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.navy,
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -159,14 +188,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Final Price: ${record.finalPrice.toStringAsFixed(2)}',
+                    record.finalPrice.toStringAsFixed(2),
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Original: ${record.price.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -177,12 +211,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 Text(
                   DateFormat('dd-MM-yyyy').format(record.date),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   DateFormat.jm().format(record.date),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
