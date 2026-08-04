@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:discount_scanner/app_theme.dart';
 import 'package:discount_scanner/services/history_service.dart';
+import 'package:discount_scanner/widgets/discount_selector.dart';
 import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 
@@ -14,9 +17,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   double? _selectedPrice;
   int? _selectedDiscount;
   double? _finalPrice;
+  Timer? _historySaveTimer;
 
   final List<double> _prices = _generatePrices();
-  final List<int> _discounts = List.generate(19, (index) => (index + 1) * 5);
 
   static List<double> _generatePrices() {
     final List<double> prices = [];
@@ -46,23 +49,38 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       setState(() {
         _finalPrice = finalPriceValue;
       });
-      HistoryService.addCalculation(
-        price: _selectedPrice!,
-        discount: _selectedDiscount!.toDouble(),
-        finalPrice: finalPriceValue,
-      );
+      _scheduleHistorySave(finalPriceValue);
     } else {
+      _historySaveTimer?.cancel();
       setState(() {
         _finalPrice = null;
       });
     }
   }
 
-  void _selectDiscount(int discount) {
-    setState(() {
-      _selectedDiscount = _selectedDiscount == discount ? null : discount;
-      _calculateFinalPrice();
+  void _scheduleHistorySave(double finalPriceValue) {
+    _historySaveTimer?.cancel();
+    final price = _selectedPrice!;
+    final discount = _selectedDiscount!;
+
+    _historySaveTimer = Timer(const Duration(milliseconds: 700), () {
+      HistoryService.addCalculation(
+        price: price,
+        discount: discount.toDouble(),
+        finalPrice: finalPriceValue,
+      );
     });
+  }
+
+  void _selectDiscount(int discount) {
+    _selectedDiscount = discount;
+    _calculateFinalPrice();
+  }
+
+  @override
+  void dispose() {
+    _historySaveTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -92,21 +110,23 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    _selectedPrice = value;
-                  });
+                  _selectedPrice = value;
                   _calculateFinalPrice();
                 },
               ),
             ),
-            const SizedBox(height: 20),
-            _buildDiscountSelector(),
-            const SizedBox(height: 24),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              child: _finalPrice != null
-                  ? _buildFinalPriceDisplay(_finalPrice!)
-                  : const SizedBox.shrink(),
+            if (_finalPrice != null) ...[
+              const SizedBox(height: 12),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _buildFinalPriceDisplay(_finalPrice!),
+              ),
+              const SizedBox(height: 16),
+            ] else
+              const SizedBox(height: 8),
+            DiscountSelector(
+              selectedDiscount: _selectedDiscount,
+              onSelected: _selectDiscount,
             ),
           ],
         ),
@@ -149,50 +169,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
-  Widget _buildDiscountSelector() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0, bottom: 12),
-          child: Text(
-            'Select Discount:',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _discounts.map((discount) {
-            final isSelected = _selectedDiscount == discount;
-            return SizedBox(
-              width: 68,
-              child: ChoiceChip(
-                label: Center(child: Text('$discount%')),
-                selected: isSelected,
-                onSelected: (selected) {
-                  _selectDiscount(discount);
-                },
-                labelStyle: TextStyle(
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-                selectedColor: colorScheme.primary,
-                backgroundColor: colorScheme.surface,
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
   Widget _buildDropdownCard({required String label, required Widget child}) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -227,8 +203,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
           children: [
             const Text(
               'Final Price',
@@ -238,11 +214,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const Spacer(),
             Text(
               finalPrice.toStringAsFixed(2),
               style: const TextStyle(
-                fontSize: 52,
+                fontSize: 34,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.amber,
               ),

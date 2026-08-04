@@ -17,13 +17,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
+    HistoryService.changes.addListener(_loadHistory);
     _loadHistory();
   }
 
   void _loadHistory() {
+    if (!mounted) return;
     setState(() {
       _historyFuture = HistoryService.getHistory();
     });
+  }
+
+  @override
+  void dispose() {
+    HistoryService.changes.removeListener(_loadHistory);
+    super.dispose();
   }
 
   void _clearHistory() async {

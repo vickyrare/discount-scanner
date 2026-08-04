@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CalculationRecord {
@@ -16,19 +17,19 @@ class CalculationRecord {
 
   // For serialization
   Map<String, dynamic> toJson() => {
-        'date': date.toIso8601String(),
-        'price': price,
-        'discount': discount,
-        'finalPrice': finalPrice,
-      };
+    'date': date.toIso8601String(),
+    'price': price,
+    'discount': discount,
+    'finalPrice': finalPrice,
+  };
 
   // For deserialization
   factory CalculationRecord.fromJson(Map<String, dynamic> json) =>
       CalculationRecord(
         date: DateTime.parse(json['date']),
-        price: json['price'],
-        discount: json['discount'],
-        finalPrice: json['finalPrice'],
+        price: (json['price'] as num).toDouble(),
+        discount: (json['discount'] as num).toDouble(),
+        finalPrice: (json['finalPrice'] as num).toDouble(),
       );
 
   // Override equals for uniqueness check
@@ -44,11 +45,17 @@ class CalculationRecord {
           discount == other.discount;
 
   @override
-  int get hashCode => date.year.hashCode ^ date.month.hashCode ^ date.day.hashCode ^ price.hashCode ^ discount.hashCode;
+  int get hashCode =>
+      date.year.hashCode ^
+      date.month.hashCode ^
+      date.day.hashCode ^
+      price.hashCode ^
+      discount.hashCode;
 }
 
 class HistoryService {
   static const _historyKey = 'calculation_history';
+  static final ValueNotifier<int> changes = ValueNotifier<int>(0);
 
   static Future<void> addCalculation({
     required double price,
@@ -68,9 +75,11 @@ class HistoryService {
     // Add only if it's a unique calculation for the day
     if (!history.contains(newRecord)) {
       history.insert(0, newRecord); // Add to the top of the list
-      final List<String> historyJson =
-          history.map((record) => json.encode(record.toJson())).toList();
+      final List<String> historyJson = history
+          .map((record) => json.encode(record.toJson()))
+          .toList();
       await prefs.setStringList(_historyKey, historyJson);
+      changes.value++;
     }
   }
 
@@ -83,13 +92,15 @@ class HistoryService {
     }
 
     return historyJson
-        .map((recordJson) =>
-            CalculationRecord.fromJson(json.decode(recordJson)))
+        .map(
+          (recordJson) => CalculationRecord.fromJson(json.decode(recordJson)),
+        )
         .toList();
   }
-  
+
   static Future<void> clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_historyKey);
+    changes.value++;
   }
 }

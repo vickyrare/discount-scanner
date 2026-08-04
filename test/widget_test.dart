@@ -15,7 +15,8 @@ void main() {
 
     expect(find.text('Manual Calculation'), findsOneWidget);
     expect(find.text('Original Price'), findsOneWidget);
-    expect(find.text('Select Discount:'), findsOneWidget);
-    expect(find.text('10%'), findsOneWidget);
+    expect(find.text('Popular discounts'), findsOneWidget);
+    expect(find.text('Exact discount'), findsOneWidget);
+    expect(find.text('10%'), findsWidgets);
   });
 }

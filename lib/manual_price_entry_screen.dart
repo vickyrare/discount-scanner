@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:discount_scanner/app_theme.dart';
 import 'package:discount_scanner/services/history_service.dart';
+import 'package:discount_scanner/widgets/discount_selector.dart';
 import 'package:discount_scanner/widgets/themed_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,10 +18,9 @@ class ManualPriceEntryScreen extends StatefulWidget {
 class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
   late final TextEditingController _priceController;
   double? _price;
-  double? _discount;
+  int? _discount;
   double? _finalPrice;
-
-  final List<int> _discounts = List.generate(19, (index) => (index + 1) * 5);
+  Timer? _historySaveTimer;
 
   @override
   void initState() {
@@ -31,17 +33,13 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
   }
 
   void _updatePrice() {
-    setState(() {
-      _price = double.tryParse(_priceController.text);
-      _calculateFinalPrice();
-    });
+    _price = double.tryParse(_priceController.text);
+    _calculateFinalPrice();
   }
 
-  void _selectDiscount(double discount) {
-    setState(() {
-      _discount = _discount == discount ? null : discount;
-      _calculateFinalPrice();
-    });
+  void _selectDiscount(int discount) {
+    _discount = discount;
+    _calculateFinalPrice();
   }
 
   void _calculateFinalPrice() {
@@ -50,16 +48,27 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
       setState(() {
         _finalPrice = finalPriceValue;
       });
-      HistoryService.addCalculation(
-        price: _price!,
-        discount: _discount!,
-        finalPrice: finalPriceValue,
-      );
+      _scheduleHistorySave(finalPriceValue);
     } else {
+      _historySaveTimer?.cancel();
       setState(() {
         _finalPrice = null;
       });
     }
+  }
+
+  void _scheduleHistorySave(double finalPriceValue) {
+    _historySaveTimer?.cancel();
+    final price = _price!;
+    final discount = _discount!;
+
+    _historySaveTimer = Timer(const Duration(milliseconds: 700), () {
+      HistoryService.addCalculation(
+        price: price,
+        discount: discount.toDouble(),
+        finalPrice: finalPriceValue,
+      );
+    });
   }
 
   void _clearAll() {
@@ -73,6 +82,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
 
   @override
   void dispose() {
+    _historySaveTimer?.cancel();
     _priceController.removeListener(_updatePrice);
     _priceController.dispose();
     super.dispose();
@@ -99,15 +109,19 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
             _buildHeader(),
             const SizedBox(height: 20),
             _buildPriceInputCard(),
-            const SizedBox(height: 20),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: _finalPrice != null
-                  ? _buildFinalPriceDisplay(_finalPrice!)
-                  : const SizedBox.shrink(),
+            if (_finalPrice != null) ...[
+              const SizedBox(height: 12),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _buildFinalPriceDisplay(_finalPrice!),
+              ),
+              const SizedBox(height: 16),
+            ] else
+              const SizedBox(height: 8),
+            DiscountSelector(
+              selectedDiscount: _discount,
+              onSelected: _selectDiscount,
             ),
-            const SizedBox(height: 24),
-            _buildDiscountSelector(),
           ],
         ),
       ),
@@ -187,8 +201,8 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
           children: [
             const Text(
               'Final Price',
@@ -198,11 +212,11 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const Spacer(),
             Text(
               finalPrice.toStringAsFixed(2),
               style: const TextStyle(
-                fontSize: 42,
+                fontSize: 34,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -210,50 +224,6 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildDiscountSelector() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0, bottom: 12),
-          child: Text(
-            'Select Discount:',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _discounts.map((discount) {
-            final isSelected = _discount == discount.toDouble();
-            return SizedBox(
-              width: 68,
-              child: ChoiceChip(
-                label: Center(child: Text('$discount%')),
-                selected: isSelected,
-                onSelected: (selected) {
-                  _selectDiscount(discount.toDouble());
-                },
-                labelStyle: TextStyle(
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                ),
-                selectedColor: colorScheme.primary,
-                backgroundColor: colorScheme.surface,
-              ),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 }
