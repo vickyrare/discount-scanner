@@ -13,7 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
+  final bool isActive;
+
+  const ScannerScreen({super.key, this.isActive = true});
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
@@ -41,7 +43,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     if (_cameras != null && _cameras!.isNotEmpty) {
       _controller = CameraController(
         _cameras![0],
-        ResolutionPreset.max,
+        ResolutionPreset.medium,
         enableAudio: false,
         imageFormatGroup: Platform.isAndroid
             ? ImageFormatGroup.nv21
@@ -51,15 +53,58 @@ class _ScannerScreenState extends State<ScannerScreen> {
       if (!mounted) {
         return;
       }
-      _controller!.startImageStream(_processImage);
+      if (widget.isActive) {
+        await _startImageStream();
+      }
       setState(() {
         _isCameraInitialized = true;
       });
     }
   }
 
+  @override
+  void didUpdateWidget(covariant ScannerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive == widget.isActive) return;
+
+    if (widget.isActive) {
+      _startImageStream();
+    } else {
+      _stopScanning();
+    }
+  }
+
+  Future<void> _startImageStream() async {
+    final controller = _controller;
+    if (controller == null ||
+        !controller.value.isInitialized ||
+        controller.value.isStreamingImages ||
+        _isNavigating) {
+      return;
+    }
+
+    await controller.startImageStream(_processImage);
+  }
+
+  Future<void> _stopImageStream() async {
+    final controller = _controller;
+    if (controller == null ||
+        !controller.value.isInitialized ||
+        !controller.value.isStreamingImages) {
+      return;
+    }
+
+    await controller.stopImageStream();
+  }
+
+  void _stopScanning() {
+    _navigationTimer?.cancel();
+    _isBusy = false;
+    _stopImageStream();
+  }
+
   void _processImage(CameraImage image) {
-    if (_isBusy || _isNavigating) {
+    if (!widget.isActive || _isBusy || _isNavigating) {
       return;
     }
     _isBusy = true;
@@ -93,6 +138,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
     _textRecognizer
         .processImage(inputImage)
         .then((RecognizedText recognizedText) {
+          if (!mounted || !widget.isActive) return;
+
           final parsedResult = TextParser.parse(recognizedText.text);
           final price = parsedResult['price'];
           final discount = parsedResult['discount'];
@@ -121,9 +168,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _navigateToResult(double price, double discount) {
-    if (_isNavigating) return;
+    if (_isNavigating || !widget.isActive) return;
     _isNavigating = true;
-    _controller?.stopImageStream();
+    _stopImageStream();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -133,9 +180,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   void _navigateToManualDiscount(double price) {
-    if (_isNavigating) return;
+    if (_isNavigating || !widget.isActive) return;
     _isNavigating = true;
-    _controller?.stopImageStream();
+    _stopImageStream();
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -149,8 +196,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
     _detectedPrice = null;
     _detectedDiscount = null;
     _navigationTimer?.cancel();
-    if (mounted) {
-      _controller?.startImageStream(_processImage);
+    if (mounted && widget.isActive) {
+      _startImageStream();
     }
     setState(() {});
   }

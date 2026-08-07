@@ -18,9 +18,29 @@ class ManualPriceEntryScreen extends StatefulWidget {
 class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
   late final TextEditingController _priceController;
   double? _price;
+  double? _selectedPresetPrice;
   int? _discount;
   double? _finalPrice;
   Timer? _historySaveTimer;
+
+  final List<double> _presetPrices = _generatePresetPrices();
+
+  static List<double> _generatePresetPrices() {
+    final List<double> prices = [];
+    for (double i = 5; i <= 100; i += 5) {
+      prices.add(i);
+    }
+    for (double i = 110; i <= 500; i += 10) {
+      prices.add(i);
+    }
+    for (double i = 550; i <= 1000; i += 50) {
+      prices.add(i);
+    }
+    for (double i = 1100; i <= 5000; i += 100) {
+      prices.add(i);
+    }
+    return prices;
+  }
 
   @override
   void initState() {
@@ -34,7 +54,28 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
 
   void _updatePrice() {
     _price = double.tryParse(_priceController.text);
+    _selectedPresetPrice = _findPresetPrice(_price);
     _calculateFinalPrice();
+  }
+
+  double? _findPresetPrice(double? price) {
+    if (price == null) return null;
+
+    for (final presetPrice in _presetPrices) {
+      if ((presetPrice - price).abs() < 0.001) {
+        return presetPrice;
+      }
+    }
+    return null;
+  }
+
+  void _selectPresetPrice(double? price) {
+    if (price == null) return;
+
+    _priceController.text = price.toStringAsFixed(2);
+    _priceController.selection = TextSelection.collapsed(
+      offset: _priceController.text.length,
+    );
   }
 
   void _selectDiscount(int discount) {
@@ -75,6 +116,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
     _priceController.clear();
     setState(() {
       _price = null;
+      _selectedPresetPrice = null;
       _discount = null;
       _finalPrice = null;
     });
@@ -92,7 +134,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
   Widget build(BuildContext context) {
     return ThemedScaffold(
       appBar: AppBar(
-        title: const Text('Manual Calculation'),
+        title: const Text('Price Calculator'),
         actions: [
           IconButton(
             tooltip: 'Clear',
@@ -108,7 +150,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
           children: [
             _buildHeader(),
             const SizedBox(height: 20),
-            _buildPriceInputCard(),
+            _buildAmountCard(),
             if (_finalPrice != null) ...[
               const SizedBox(height: 12),
               AnimatedSwitcher(
@@ -154,7 +196,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
     );
   }
 
-  Widget _buildPriceInputCard() {
+  Widget _buildAmountCard() {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
@@ -165,7 +207,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Original Price',
+              'Amount',
               style: TextStyle(
                 fontSize: 12,
                 color: colorScheme.primary,
@@ -178,7 +220,7 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
               controller: _priceController,
               decoration: const InputDecoration(
                 prefixText: '\$',
-                hintText: 'Enter price',
+                hintText: 'Enter amount',
               ),
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               keyboardType: const TextInputType.numberWithOptions(
@@ -187,6 +229,25 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<double>(
+              value: _selectedPresetPrice,
+              hint: const Text('Select a preset amount'),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.list_alt),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              items: _presetPrices.map((price) {
+                return DropdownMenuItem<double>(
+                  value: price,
+                  child: Text(price.toStringAsFixed(2)),
+                );
+              }).toList(),
+              onChanged: _selectPresetPrice,
             ),
           ],
         ),

@@ -23,17 +23,10 @@ class HowToScreen extends StatelessWidget {
           ),
           _buildSection(
             context,
-            icon: Icons.edit,
-            title: 'Enter Price Manually',
-            description:
-                'If the app can\'t detect the discount, or if you want to enter the price and discount manually, tap the "Enter Price Manually" button. You can then type in the price and select a discount.',
-          ),
-          _buildSection(
-            context,
             icon: Icons.calculate,
-            title: 'Calculator',
+            title: 'Calculate a Discount',
             description:
-                'The "Calculator" button allows you to quickly calculate a discount without using the camera. Simply select a price and a discount percentage to see the final price.',
+                'Use the Price tab to type any amount, or pick from the preset list to fill the amount automatically. Then choose a discount to see the final price.',
           ),
           _buildSection(
             context,
