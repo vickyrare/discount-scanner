@@ -3,9 +3,9 @@
 ## Current Release
 
 - App name: Discount Scanner
-- Bundle ID: `com.cistemcode.discountScanner`
-- Version: `1.0.4`
-- Build number: `5`
+- Bundle ID: `com.cistemcode.discountscanner`
+- Version: `1.0.5`
+- Build number: `6`
 - Minimum iOS version: `12.0`
 
 ## Build On The Release Mac
@@ -28,7 +28,7 @@ Open `ios/Runner.xcworkspace` in Xcode if signing needs to be configured.
 
 - Target: `Runner`
 - Signing: Automatic
-- Bundle Identifier: `com.cistemcode.discountScanner`
+- Bundle Identifier: `com.cistemcode.discountscanner`
 - Team: choose the Apple Developer team that owns the app record
 
 ## Store Assets
