@@ -36,6 +36,8 @@ Open `ios/Runner.xcworkspace` in Xcode if signing needs to be configured.
 Prepared assets are in:
 
 - `assets/phone-assets/ios-6.7/`
+- `assets/phone-assets/ios-6.5/`
+- `assets/phone-assets/ipad-13/`
 - `assets/phone-assets/android-phone/`
 - `assets/phone-assets/feature-graphic.png`
 
