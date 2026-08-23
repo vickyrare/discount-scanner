@@ -4,8 +4,8 @@
 
 - App name: Discount Scanner
 - Bundle ID: `com.cistemcode.discountscanner`
-- Version: `1.0.5`
-- Build number: `6`
+- Version: `1.0.6`
+- Build number: `7`
 - Minimum iOS version: `12.0`
 
 ## Build On The Release Mac
