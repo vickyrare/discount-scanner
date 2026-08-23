@@ -45,6 +45,15 @@ The iOS marketing icon is generated in:
 
 - `ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png`
 
+## App Store Connect Availability
+
+For this release, opt out of Mac distribution unless the app has been tested on Apple silicon Macs:
+
+1. Open the app in App Store Connect.
+2. Go to Pricing and Availability.
+3. In iPhone and iPad Apps on Apple Silicon Mac, deselect Make this app available.
+4. Save, then resubmit the iOS build.
+
 ## Preflight Checks
 
 Run these before archiving:

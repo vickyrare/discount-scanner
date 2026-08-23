@@ -143,28 +143,33 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 20),
-            _buildAmountCard(),
-            if (_finalPrice != null) ...[
-              const SizedBox(height: 12),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _buildFinalPriceDisplay(_finalPrice!),
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: SingleChildScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 20),
+              _buildAmountCard(),
+              if (_finalPrice != null) ...[
+                const SizedBox(height: 12),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _buildFinalPriceDisplay(_finalPrice!),
+                ),
+                const SizedBox(height: 16),
+              ] else
+                const SizedBox(height: 8),
+              DiscountSelector(
+                selectedDiscount: _discount,
+                onSelected: _selectDiscount,
               ),
-              const SizedBox(height: 16),
-            ] else
-              const SizedBox(height: 8),
-            DiscountSelector(
-              selectedDiscount: _discount,
-              onSelected: _selectDiscount,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -218,14 +223,25 @@ class _ManualPriceEntryScreenState extends State<ManualPriceEntryScreen> {
             const SizedBox(height: 8),
             TextFormField(
               controller: _priceController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixText: '\$',
                 hintText: 'Enter amount',
+                suffixIcon: IconButton(
+                  tooltip: 'Done',
+                  icon: const Icon(Icons.keyboard_hide),
+                  onPressed: () =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
+                ),
               ),
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
+              onTapOutside: (_) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
