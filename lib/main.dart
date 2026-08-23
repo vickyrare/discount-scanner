@@ -1,4 +1,5 @@
 import 'package:discount_scanner/app_theme.dart';
+import 'package:discount_scanner/company_info_screen.dart';
 import 'package:discount_scanner/history_screen.dart';
 import 'package:discount_scanner/how_to_screen.dart';
 import 'package:discount_scanner/manual_price_entry_screen.dart';
@@ -60,6 +61,7 @@ class _MainScreenState extends State<MainScreen> {
       const ManualPriceEntryScreen(),
       const HistoryScreen(),
       const HowToScreen(),
+      const CompanyInfoScreen(),
     ];
 
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -88,12 +90,18 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.help_outline),
               label: 'How To',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.business),
+              label: 'Company',
+            ),
           ],
           currentIndex: _selectedIndex,
           selectedItemColor: Theme.of(context).colorScheme.primary,
           unselectedItemColor: Colors.grey,
           onTap: _onItemTapped,
           type: BottomNavigationBarType.fixed,
+          selectedFontSize: 11,
+          unselectedFontSize: 11,
         ),
       ),
     );
